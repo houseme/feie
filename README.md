@@ -1,4 +1,4 @@
-# FeiEr Printer SDK for Golang
+# FeiE Printer SDK for Golang
 Flying Goose Cloud print go language sdk
 
 ## Installation
