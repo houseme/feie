@@ -13,6 +13,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -20,6 +21,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/houseme/gocrypto"
 	"github.com/houseme/gocrypto/rsa"
+
+	"github.com/houseme/feie/log"
 )
 
 type options struct {
@@ -29,10 +32,12 @@ type options struct {
 	PublicKey string
 	TimeOut   time.Duration
 	UserAgent string
-	Logger    ILogger         // 日志
+	Logger    log.ILogger     // 日志
 	DataType  gocrypto.Encode // 数据类型
 	HashType  gocrypto.Hash   // Hash类型
 	APIName   string          // API名称
+	LogPath   string          // 日志路径
+	Level     log.Level
 }
 
 // FeiE is the feie client.
@@ -89,7 +94,7 @@ func WithUserAgent(userAgent string) Option {
 }
 
 // WithLogger sets the logger.
-func WithLogger(logger ILogger) Option {
+func WithLogger(logger log.ILogger) Option {
 	return func(o *options) {
 		o.Logger = logger
 	}
@@ -116,15 +121,31 @@ func WithAPIName(apiName string) Option {
 	}
 }
 
+// WithLogPath sets the log path.
+func WithLogPath(logPath string) Option {
+	return func(o *options) {
+		o.LogPath = logPath
+	}
+}
+
+// WithLevel sets the level.
+func WithLevel(level log.Level) Option {
+	return func(o *options) {
+		o.Level = level
+	}
+}
+
 // NewFeiE returns a new feie client.
-func NewFeiE(opts ...Option) (*FeiE, error) {
+func NewFeiE(ctx context.Context, opts ...Option) (*FeiE, error) {
 	op := options{
 		TimeOut:   30 * time.Second,
 		Gateway:   Gateway,
 		UserAgent: userAgent,
 		DataType:  gocrypto.Base64,
 		HashType:  gocrypto.SHA256,
-		Logger:    NewLogger(),
+		LogPath:   os.TempDir(),
+		Level:     log.DebugLevel,
+		Logger:    log.New(ctx, log.WithLevel(log.DebugLevel), log.WithLogPath(os.TempDir())),
 	}
 	for _, option := range opts {
 		option(&op)

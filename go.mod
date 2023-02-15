@@ -6,10 +6,12 @@ require (
 	github.com/bytedance/sonic v1.8.0
 	github.com/cloudwego/hertz v0.5.2
 	github.com/houseme/gocrypto v1.2.1
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	go.uber.org/zap v1.24.0
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/bytedance/go-tagexpr/v2 v2.9.2 // indirect
 	github.com/bytedance/gopkg v0.0.0-20220413063733-65bf48ffb3a7 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
@@ -29,4 +31,5 @@ require (
 	golang.org/x/arch v0.2.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
