@@ -81,6 +81,9 @@ var (
 	// DebugField debug=1返回非json格式的数据。仅测试时候使用。
 	DebugField = "debug"
 
+	// SNListField 打印机编号，多台打印机请用减号“-”连接起来。
+	SNListField = "snlist"
+
 	// PrinterContentField 打印机编号(必填) # 打印机识别码(必填) # 备注名称(选填) # 流量卡号码(选填)，多台打印机请换行（\n）添加新打印机信息，每次最多100台。
 	PrinterContentField = "printerContent"
 

@@ -36,7 +36,6 @@ type options struct {
 	UserAgent []byte
 	DataType  gocrypto.Encode // 数据类型
 	HashType  gocrypto.Hash   // Hash类型
-	APIName   string          // API名称
 	LogPath   string          // 日志路径
 	Level     log.Level
 }
@@ -48,7 +47,7 @@ type FeiE struct {
 	logger     log.ILogger
 	op         options
 	secretInfo rsa.SecretInfo
-	sysTime    time.Time
+	sysTime    string
 }
 
 // Option The option is a payment option.
@@ -110,13 +109,6 @@ func WithHashType(hashType gocrypto.Hash) Option {
 	}
 }
 
-// WithAPIName sets the api name.
-func WithAPIName(apiName string) Option {
-	return func(o *options) {
-		o.APIName = apiName
-	}
-}
-
 // WithLogPath sets the log path.
 func WithLogPath(logPath string) Option {
 	return func(o *options) {
@@ -131,8 +123,8 @@ func WithLevel(level log.Level) Option {
 	}
 }
 
-// NewFeiE returns a new feie client.
-func NewFeiE(ctx context.Context, opts ...Option) (*FeiE, error) {
+// New returns a new feie client.
+func New(ctx context.Context, opts ...Option) (*FeiE, error) {
 	op := options{
 		TimeOut:   30 * time.Second,
 		Gateway:   gateway,
@@ -161,35 +153,45 @@ func NewFeiE(ctx context.Context, opts ...Option) (*FeiE, error) {
 	}, nil
 }
 
-// SetAPIName sets the api name.
-func (f *FeiE) SetAPIName(apiName string) {
-	f.op.APIName = apiName
-}
-
 // SetRequest sets the request.
 func (f *FeiE) SetRequest(request *protocol.Request) {
 	f.request = request
 }
 
-// Sha1Sign returns the sha1 sign.
-func (f *FeiE) Sha1Sign() string {
-	s := sha1.Sum([]byte(f.op.User + f.op.UKey + f.sysTime.Format("20060102"))) // 20060102150405
+// Response return request response content
+func (f *FeiE) Response() *protocol.Response {
+	return f.response
+}
+
+// sha1Sign returns the sha1 sign.
+func (f *FeiE) sha1Sign() string {
+	s := sha1.Sum([]byte(f.op.User + f.op.UKey + f.sysTime)) // 20060102150405
 	return hex.EncodeToString(s[:])
 }
 
-// GenerateTime Generate current time
-func (f *FeiE) GenerateTime() {
-	f.sysTime = time.Now()
+// generateTime Generate current time
+func (f *FeiE) generateTime() {
+	f.sysTime = strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-// DoRequest does the request.
-func (f *FeiE) DoRequest(ctx context.Context) error {
+// doRequest does the request.
+func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error {
+	f.generateTime()
+	formData[UserField] = f.op.User
+	formData[SysTimeField] = f.sysTime
+	formData[SigField] = f.sha1Sign()
+	f.logger.Debug(ctx, "formData:", formData)
+	f.request.SetMultipartFormData(formData)
+	f.request.SetRequestURI(gateway)
+	f.request.Header.SetMethod(consts.MethodPost)
+	f.request.Header.SetUserAgentBytes(userAgent)
+	f.logger.Debug(ctx, "request content: ", f.request)
+
 	c, err := client.NewClient()
 	if err != nil {
 		return err
 	}
 
-	f.request.SetRequestURI(gateway)
 	f.logger.Debug(ctx, "do request start")
 	err = c.Do(ctx, f.request, f.response)
 	if err != nil {
@@ -200,21 +202,63 @@ func (f *FeiE) DoRequest(ctx context.Context) error {
 }
 
 // OpenPrintMsg 打印订单
+// 发送用户需要打印的订单内容给飞鹅云小票打印机 （该接口只能是小票机使用，如购买标签机请使用标签机专用接口）
 // see: http://help.feieyun.com/document.php
 func (f *FeiE) OpenPrintMsg(ctx context.Context, sn, content string) (resp *PrintMsgResp, err error) {
 	var formData = make(map[string]string, 6)
-	formData[UserField] = f.op.User
-	formData[SysTimeField] = strconv.FormatInt(f.sysTime.Unix(), 10)
 	formData[APINameFiled] = PrintMsg
 	formData[SNFiled] = sn
 	formData[ContentField] = content
-	formData[SigField] = f.Sha1Sign()
-	f.logger.Debug(ctx, "formData:", formData)
-	f.request.SetMultipartFormData(formData)
-	f.request.Header.SetMethod(consts.MethodPost)
-	f.request.Header.SetUserAgentBytes(userAgent)
-	f.logger.Debug(ctx, f.request)
-	if err = f.DoRequest(ctx); err != nil {
+
+	if err = f.doRequest(ctx, formData); err != nil {
+		return
+	}
+	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
+	if !f.response.HasBodyBytes() {
+		err = errors.New("response is empty")
+		return
+	}
+	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+		return
+	}
+	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	return
+}
+
+// OpenPrinterAddList 批量添加打印机
+// 批量添加打印机，请严格参照格式说明：
+// 批量添加规则：
+//
+// 打印机编号SN(必填) # 打印机识别码KEY(必填) # 备注名称(选填) # 流量卡号码(选填)，多台打印机请换行（\n）添加新打印机信息，每次最多100行(台)。
+// 每次最多添加100台。
+func (f *FeiE) OpenPrinterAddList(ctx context.Context, content string) (resp *PrinterAddResp, err error) {
+	var formData = make(map[string]string, 6)
+	formData[APINameFiled] = PrinterAddList
+	formData[PrinterContentField] = content
+
+	if err = f.doRequest(ctx, formData); err != nil {
+		return
+	}
+	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
+	if !f.response.HasBodyBytes() {
+		err = errors.New("response is empty")
+		return
+	}
+	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+		return
+	}
+	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	return
+}
+
+// OpenPrinterDelList 删除批量打印机
+// content 打印机编号，多台打印机请用减号“-”连接起来。
+// see: http://help.feieyun.com/document.php
+func (f *FeiE) OpenPrinterDelList(ctx context.Context, content string) (resp *PrinterDelResp, err error) {
+	var formData = make(map[string]string, 6)
+	formData[SNListField] = content
+
+	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
 	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
