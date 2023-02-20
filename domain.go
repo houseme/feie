@@ -64,10 +64,10 @@ type PrintMsgReq struct {
 
 // PrintMsgResp is the response body for printing a message.
 type PrintMsgResp struct {
-	Ret                int    `json:"ret" description:"错误码，0为成功，非0为错误。"`
 	Msg                string `json:"msg" description:"错误信息。"`
 	Data               string `json:"data" description:"成功时返回的数据，正确返回订单ID。"`
 	ServerExecutedTime int64  `json:"serverExecutedTime" description:"服务器执行时间，单位毫秒。"`
+	Ret                int    `json:"ret" description:"错误码，0为成功，非0为错误。"`
 }
 
 // PrintLabelMsgReq is the request body for printing a label message.

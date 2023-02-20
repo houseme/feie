@@ -72,8 +72,8 @@ type (
 	// Logger is the global logger instance.
 	Logger struct {
 		op    options
-		Level Level       `json:"level"`
-		Log   *zap.Logger `json:"log"`
+		level Level
+		log   *zap.Logger
 	}
 	options struct {
 		LogPath string
@@ -151,97 +151,97 @@ func New(_ context.Context, opts ...Option) *Logger {
 
 	coreArr = append(coreArr, errorFileCore)
 	return &Logger{
-		Level: op.Level,
-		Log:   zap.New(zapcore.NewTee(coreArr...), zap.AddCaller()), // zap.AddCaller()为显示文件名和行号，可省略
+		level: op.Level,
+		log:   zap.New(zapcore.NewTee(coreArr...), zap.AddCaller()), // zap.AddCaller()为显示文件名和行号，可省略
 	}
 }
 
 // Print is the interface for print
 func (l *Logger) Print(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Info(v...)
+	l.log.Sugar().Info(v...)
 }
 
 // Printf is the interface for printf
 func (l *Logger) Printf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Infof(format, v...)
+	l.log.Sugar().Infof(format, v...)
 }
 
 // Debug is the interface for debug
 func (l *Logger) Debug(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Debug(v...)
+	l.log.Sugar().Debug(v...)
 }
 
 // Debugf is the interface for debugf
 func (l *Logger) Debugf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Debugf(format, v...)
+	l.log.Sugar().Debugf(format, v...)
 }
 
 // Info is the interface for info
 func (l *Logger) Info(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Info(v...)
+	l.log.Sugar().Info(v...)
 }
 
 // Infof is the interface for infof
 func (l *Logger) Infof(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Infof(format, v...)
+	l.log.Sugar().Infof(format, v...)
 }
 
 // Notice is the interface for notice
 func (l *Logger) Notice(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Info(v...)
+	l.log.Sugar().Info(v...)
 }
 
 // Noticef is the interface for noticef
 func (l *Logger) Noticef(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Infof(format, v...)
+	l.log.Sugar().Infof(format, v...)
 }
 
 // Warning is the interface for warning
 func (l *Logger) Warning(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Warn(v...)
+	l.log.Sugar().Warn(v...)
 }
 
 // Warningf is the interface for warningf
 func (l *Logger) Warningf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Warnf(format, v...)
+	l.log.Sugar().Warnf(format, v...)
 }
 
 // Error is the interface for error
 func (l *Logger) Error(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Error(v...)
+	l.log.Sugar().Error(v...)
 }
 
 // Errorf is the interface for errorf
 func (l *Logger) Errorf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Errorf(format, v...)
+	l.log.Sugar().Errorf(format, v...)
 }
 
 // Critical is the interface for critical
 func (l *Logger) Critical(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Fatal(v...)
+	l.log.Sugar().Fatal(v...)
 }
 
 // Criticalf is the interface for criticalf
 func (l *Logger) Criticalf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Fatalf(format, v...)
+	l.log.Sugar().Fatalf(format, v...)
 }
 
 // Panic is the interface for panic
 func (l *Logger) Panic(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Panic(v...)
+	l.log.Sugar().Panic(v...)
 }
 
 // Panicf is the interface for panicf
 func (l *Logger) Panicf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Panicf(format, v...)
+	l.log.Sugar().Panicf(format, v...)
 }
 
 // Fatal is the interface for fatal
 func (l *Logger) Fatal(ctx context.Context, v ...interface{}) {
-	l.Log.Sugar().Fatal(v...)
+	l.log.Sugar().Fatal(v...)
 }
 
 // Fatalf is the interface for fatalf
 func (l *Logger) Fatalf(ctx context.Context, format string, v ...interface{}) {
-	l.Log.Sugar().Fatalf(format, v...)
+	l.log.Sugar().Fatalf(format, v...)
 }
