@@ -125,7 +125,7 @@ func WithLevel(level log.Level) Option {
 }
 
 // New returns a new feie client.
-func New(ctx context.Context, opts ...Option) (*FeiE, error) {
+func New(ctx context.Context, opts ...Option) *FeiE {
 	op := options{
 		TimeOut:   30 * time.Second,
 		Gateway:   gateway,
@@ -151,7 +151,7 @@ func New(ctx context.Context, opts ...Option) (*FeiE, error) {
 		logger:   log.New(ctx, log.WithLevel(op.Level), log.WithLogPath(op.LogPath)),
 		request:  &protocol.Request{},
 		response: &protocol.Response{},
-	}, nil
+	}
 }
 
 // SetRequest sets the request.
