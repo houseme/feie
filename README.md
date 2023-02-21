@@ -1,4 +1,12 @@
 # FeiE Printer SDK for Golang
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/houseme/feie.svg)](https://pkg.go.dev/github.com/houseme/feie)
+[![FEIE-CI](https://github.com/houseme/feie/actions/workflows/go.yml/badge.svg)](https://github.com/houseme/feie/actions/workflows/go.yml)
+![GitHub](https://img.shields.io/github/license/houseme/feie?style=flat-square)
+![GitHub go.mod Go version (branch)](https://img.shields.io/github/go-mod/go-version/houseme/feie/main?style=flat-square)
+
+
+
 Flying Goose Cloud print go language sdk
 
 ## Installation
