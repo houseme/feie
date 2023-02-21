@@ -11,6 +11,7 @@ package feie
 import (
 	"context"
 	"crypto/sha1"
+	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"os"
@@ -208,12 +209,14 @@ func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error 
 	formData[SigField] = f.sha1Sign()
 	f.logger.Debug(ctx, "formData:", formData)
 	f.request.SetMultipartFormData(formData)
-	f.request.SetRequestURI(gateway)
+	f.request.SetRequestURI(f.op.Gateway)
 	f.request.Header.SetMethod(consts.MethodPost)
-	f.request.Header.SetUserAgentBytes(userAgent)
+	f.request.Header.SetUserAgentBytes(f.op.UserAgent)
 	f.logger.Debug(ctx, "request content: ", f.request)
 
-	c, err := client.NewClient()
+	c, err := client.NewClient(client.WithTLSConfig(&tls.Config{
+		InsecureSkipVerify: true,
+	}), client.WithDialTimeout(f.op.TimeOut))
 	if err != nil {
 		return err
 	}
