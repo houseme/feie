@@ -49,6 +49,8 @@ type FeiE struct {
 	op         options
 	secretInfo rsa.SecretInfo
 	sysTime    string
+	user       string
+	ukey       string
 }
 
 // Option The option is a payment option.
@@ -61,8 +63,8 @@ func WithUser(user string) Option {
 	}
 }
 
-// WithUKey sets the ukey.
-func WithUKey(ukey string) Option {
+// WithUserKey sets the ukey.
+func WithUserKey(ukey string) Option {
 	return func(o *options) {
 		o.UKey = ukey
 	}
@@ -151,6 +153,8 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 		logger:   log.New(ctx, log.WithLevel(op.Level), log.WithLogPath(op.LogPath)),
 		request:  &protocol.Request{},
 		response: &protocol.Response{},
+		user:     op.User,
+		ukey:     op.UKey,
 	}
 }
 
@@ -169,9 +173,24 @@ func (f *FeiE) SetLogger(logger log.ILogger) {
 	f.logger = logger
 }
 
+// SetUserKey sets the user key.
+func (f *FeiE) SetUserKey(ukey string) {
+	f.ukey = ukey
+}
+
+// Reset reset the feie client.
+func (f *FeiE) Reset() {
+	if strings.TrimSpace(f.op.User) != "" {
+		f.user = f.op.User
+	}
+	if strings.TrimSpace(f.op.UKey) != "" {
+		f.ukey = f.op.UKey
+	}
+}
+
 // sha1Sign returns the sha1 sign.
 func (f *FeiE) sha1Sign() string {
-	s := sha1.Sum([]byte(f.op.User + f.op.UKey + f.sysTime)) // 20060102150405
+	s := sha1.Sum([]byte(f.user + f.ukey + f.sysTime))
 	return hex.EncodeToString(s[:])
 }
 
@@ -183,7 +202,8 @@ func (f *FeiE) generateTime() {
 // doRequest does the request.
 func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error {
 	f.generateTime()
-	formData[UserField] = f.op.User
+
+	formData[UserField] = f.user
 	formData[SysTimeField] = f.sysTime
 	formData[SigField] = f.sha1Sign()
 	f.logger.Debug(ctx, "formData:", formData)
@@ -218,6 +238,9 @@ func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintM
 	formData[APINameField] = PrintMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
+	if req.User != "" {
+		f.user = req.User
+	}
 	if req.Expired > time.Now().Unix() {
 		formData[ExpiredField] = strconv.FormatInt(req.Expired, 10)
 	}
@@ -259,7 +282,9 @@ func (f *FeiE) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp
 	var formData = make(map[string]string, 5)
 	formData[APINameField] = PrinterAddList
 	formData[PrinterContentField] = req.PrinterContent
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
@@ -282,7 +307,9 @@ func (f *FeiE) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp
 	var formData = make(map[string]string, 5)
 	formData[SNListField] = req.SNList
 	formData[APINameField] = PrinterDelList
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
@@ -306,6 +333,9 @@ func (f *FeiE) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (re
 	formData[APINameField] = PrintLabelMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
+	if req.User != "" {
+		f.user = req.User
+	}
 	if req.Expired > time.Now().Unix() {
 		formData[ExpiredField] = strconv.FormatInt(req.Expired, 10)
 	}
@@ -343,6 +373,9 @@ func (f *FeiE) OpenPrinterEdit(ctx context.Context, req *PrinterEditReq) (resp *
 	formData[SNField] = req.SN
 	formData[APINameField] = PrinterEdit
 	formData[NameField] = req.Name
+	if req.User != "" {
+		f.user = req.User
+	}
 	if len(strings.TrimSpace(req.PhoneNum)) > 0 {
 		formData[PhoneNumField] = strings.TrimSpace(req.PhoneNum)
 	}
@@ -368,7 +401,9 @@ func (f *FeiE) OpenDelPrinterSQS(ctx context.Context, req *DelPrinterSQSReq) (re
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
 	formData[APINameField] = DelPrinterSqs
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
@@ -391,7 +426,9 @@ func (f *FeiE) OpenQueryOrderState(ctx context.Context, req *QueryOrderStateReq)
 	var formData = make(map[string]string, 5)
 	formData[OrderIDField] = req.OrderID
 	formData[APINameField] = QueryOrderState
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
@@ -415,7 +452,9 @@ func (f *FeiE) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfo
 	formData[SNField] = req.SN
 	formData[DateField] = req.Date
 	formData[APINameField] = QueryOrderInfoByDate
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}
@@ -439,7 +478,9 @@ func (f *FeiE) OpenQueryPrinterStatus(ctx context.Context, req *QueryPrinterStat
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
 	formData[APINameField] = QueryPrinterStatus
-
+	if req.User != "" {
+		f.user = req.User
+	}
 	if err = f.doRequest(ctx, formData); err != nil {
 		return
 	}

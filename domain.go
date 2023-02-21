@@ -188,34 +188,8 @@ type QueryPrinterStatusReq struct {
 type QueryPrinterStatusResp struct {
 	Ret                int    `json:"ret" description:"错误码，0为成功，非0为错误。"`
 	Msg                string `json:"msg" description:"错误信息。"`
-	Data               string `json:"data" description:"成功时返回的数据,打印机状态。返回打印机状态信息。共三种：1、离线。2、在线，工作状态正常。3、在线，工作状态不正常。备注：异常一般是无纸，离线的判断是打印机与服务器失去联系超过2分钟。"`
+	Data               string `json:"data" description:"成功时返回的数据,打印机状态。返回打印机状态信息共三种：1、离线。2、在线，工作状态正常。3、在线，工作状态不正常。备注：异常一般是无纸，离线的判断是打印机与服务器失去联系超过2分钟。"`
 	ServerExecutedTime int64  `json:"serverExecutedTime" description:"服务器执行时间，单位毫秒。"`
-}
-
-// Request is the request body for printer.
-type Request struct {
-	PrinterAddReq           *PrinterAddReq           `json:"printerAddReq,omitempty" description:"添加打印机请求。"`
-	PrinterDelReq           *PrinterDelReq           `json:"printerDelReq,omitempty" description:"删除打印机请求。"`
-	PrintMsgReq             *PrintMsgReq             `json:"printMsgReq,omitempty" description:"打印信息请求。"`
-	PrintLabelMsgReq        *PrintLabelMsgReq        `json:"printLabelMsgReq,omitempty" description:"打印标签信息请求。"`
-	PrinterEditReq          *PrinterEditReq          `json:"printerEditReq,omitempty" description:"编辑打印机请求。"`
-	DelPrinterSQSReq        *DelPrinterSQSReq        `json:"delPrinterSQSReq,omitempty" description:"删除打印机SQS请求。"`
-	QueryOrderStateReq      *QueryOrderStateReq      `json:"queryOrderStateReq,omitempty" description:"查询订单状态请求。"`
-	QueryOrderInfoByDateReq *QueryOrderInfoByDateReq `json:"queryOrderInfoByDateReq,omitempty" description:"查询订单信息请求。"`
-	QueryPrinterStatusReq   *QueryPrinterStatusReq   `json:"queryPrinterStatusReq,omitempty" description:"查询打印机状态请求。"`
-}
-
-// Response is the response body for printer.
-type Response struct {
-	PrinterAddResp           *PrinterAddResp           `json:"printerAddResp,omitempty" description:"添加打印机响应。"`
-	PrinterDelResp           *PrinterDelResp           `json:"printerDelResp,omitempty" description:"删除打印机响应。"`
-	PrintMsgResp             *PrintMsgResp             `json:"printMsgResp,omitempty" description:"打印信息响应。"`
-	PrintLabelMsgResp        *PrintLabelMsgResp        `json:"printLabelMsgResp,omitempty" description:"打印标签信息响应。"`
-	PrinterEditResp          *PrinterEditResp          `json:"printerEditResp,omitempty" description:"编辑打印机响应。"`
-	DelPrinterSQSResp        *DelPrinterSQSResp        `json:"delPrinterSQSResp,omitempty" description:"删除打印机SQS响应。"`
-	QueryOrderStateResp      *QueryOrderStateResp      `json:"queryOrderStateResp,omitempty" description:"查询订单状态响应。"`
-	QueryOrderInfoByDateResp *QueryOrderInfoByDateResp `json:"queryOrderInfoByDateResp,omitempty" description:"查询订单信息响应。"`
-	QueryPrinterStatusResp   *QueryPrinterStatusResp   `json:"queryPrinterStatusResp,omitempty" description:"查询打印机状态响应。"`
 }
 
 // AsyncPrinterResultReq is the request body for querying the result of an asynchronous request.
