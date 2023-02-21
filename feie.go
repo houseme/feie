@@ -164,6 +164,11 @@ func (f *FeiE) Response() *protocol.Response {
 	return f.response
 }
 
+// SetLogger set feie logger
+func (f *FeiE) SetLogger(logger log.ILogger) {
+	f.logger = logger
+}
+
 // sha1Sign returns the sha1 sign.
 func (f *FeiE) sha1Sign() string {
 	s := sha1.Sum([]byte(f.op.User + f.op.UKey + f.sysTime)) // 20060102150405
@@ -273,7 +278,6 @@ func (f *FeiE) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp
 // OpenPrinterDelList 删除批量打印机
 // content 打印机编号，多台打印机请用减号“-”连接起来。
 // see: http://help.feieyun.com/document.php
-
 func (f *FeiE) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp *PrinterDelResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNListField] = req.SNList
