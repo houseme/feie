@@ -13,9 +13,37 @@ go get -u -v github.com/houseme/feie@main
 package main
 
 import (
+    "context"
     "fmt"
+    
     "github.com/houseme/feie"
 )
+
+func main() {
+    ctx := context.Background()
+    f, err := feie.New(ctx)
+    if err != nil {
+        panic(err)
+    }
+    // 添加打印机
+    printerAddResp, err := f.OpenPrinterAddList(ctx, &feie.PrinterAddReq{
+        PrinterContent: "xxxxxx",
+    })
+    
+    if err != nil {
+    
+    }
+    fmt.Println("PrinterAddResp:", printerAddResp)
+    
+    // 执行打印
+    printMsgReq, err := f.OpenPrintMsg(ctx, &feie.PrintMsgReq{
+        SN: "xxxxx",
+    })
+    if err != nil {
+    
+    }
+    fmt.Println("PrintMsgResp:", printMsgReq)
+}
 
 ```
 

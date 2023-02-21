@@ -69,8 +69,8 @@ var (
 	SysTimeField = "stime"
 	// SigField 对参数 user+UKEY+stime拼接后（+号表示连接符）进行SHA1加密得到签名，加密后签名值为40位小写字符串。
 	SigField = "sig"
-	// APINameFiled 请求的接口名称：Open_printMsg
-	APINameFiled = "apiname"
+	// APINameField 请求的接口名称：Open_printMsg
+	APINameField = "apiname"
 
 	// ExpiredField 订单失效UNIX时间戳，10位，精确到秒，打印时超过该时间该订单将抛弃不打印，取值范围为：当前时间<订单失效时间≤24小时后。
 	ExpiredField = "expired"
@@ -87,9 +87,27 @@ var (
 	// PrinterContentField 打印机编号(必填) # 打印机识别码(必填) # 备注名称(选填) # 流量卡号码(选填)，多台打印机请换行（\n）添加新打印机信息，每次最多100台。
 	PrinterContentField = "printerContent"
 
-	// SNFiled 打印机编号
-	SNFiled = "sn"
+	// SNField 打印机编号
+	SNField = "sn"
 
 	// ContentField 打印内容,不能超过5000字节
 	ContentField = "content"
+
+	// TimesField 打印次数，默认为1。
+	TimesField = "times"
+
+	// ImgField 图片二进制数据，需配合<IMG>标签使用，最佳效果为不大于224px的正方形(宽高都为8的倍数)黑白图，支持jpg、png、bmp，不能超过10K
+	ImgField = "img"
+
+	// NameField 打印机备注名称
+	NameField = "name"
+
+	// PhoneNumField 打印机流量卡号码
+	PhoneNumField = "phoneNum"
+
+	// OrderIDField 订单ID，由接口Open_printMsg返回。
+	OrderIDField = "orderid"
+
+	// DateField 查询日期，格式为：2016-08-08
+	DateField = "date"
 )

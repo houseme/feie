@@ -56,7 +56,8 @@ type PrintMsgReq struct {
 	STime   int64  `json:"stime,string" description:"当前UNIX时间戳，10位，精确到秒。"`
 	Sig     string `json:"sig" description:"签名，详见签名算法。对参数 user+UKEY+stime拼接后（+号表示连接符）进行SHA1加密得到签名，加密后签名值为40位小写字符串。"`
 	APIName string `json:"apiname" description:"固定值Open_printMsg。"`
-	Debug   int    `json:"debug,string,omitempty" description:"debug=1返回非json格式的数据。仅测试时候使用。"`
+	Expired int64  `json:"expired,omitempty" description:"打印任务过期时间，单位秒。"`
+	BackURL string `json:"backurl,omitempty" description:"打印任务回调地址。"`
 	SN      string `json:"sn" description:"打印机编号。"`
 	Content string `json:"content" description:"打印内容。"`
 	Times   int    `json:"times,omitempty" description:"打印联数，最大支持10联。"`
@@ -76,7 +77,8 @@ type PrintLabelMsgReq struct {
 	STime   int64  `json:"stime,string" description:"当前UNIX时间戳，10位，精确到秒。"`
 	Sig     string `json:"sig" description:"签名，详见签名算法。对参数 user+UKEY+stime拼接后（+号表示连接符）进行SHA1加密得到签名，加密后签名值为40位小写字符串。"`
 	APIName string `json:"apiname" description:"固定值Open_printLabelMsg。"`
-	Debug   int    `json:"debug,string,omitempty" description:"debug=1返回非json格式的数据。仅测试时候使用。"`
+	Expired int64  `json:"expired,omitempty" description:"打印任务过期时间，单位秒。"`
+	BackURL string `json:"backurl,omitempty" description:"打印任务回调地址。"`
 	SN      string `json:"sn" description:"打印机编号。"`
 	Content string `json:"content" description:"打印内容。"`
 	Times   int    `json:"times,omitempty" description:"打印联数，最大支持10联。"`
@@ -214,4 +216,20 @@ type Response struct {
 	QueryOrderStateResp      *QueryOrderStateResp      `json:"queryOrderStateResp,omitempty" description:"查询订单状态响应。"`
 	QueryOrderInfoByDateResp *QueryOrderInfoByDateResp `json:"queryOrderInfoByDateResp,omitempty" description:"查询订单信息响应。"`
 	QueryPrinterStatusResp   *QueryPrinterStatusResp   `json:"queryPrinterStatusResp,omitempty" description:"查询打印机状态响应。"`
+}
+
+// AsyncPrinterResultReq is the request body for querying the result of an asynchronous request.
+type AsyncPrinterResultReq struct {
+	OrderID string `json:"orderId" description:"订单ID，由接口Open_printMsg返回。"`
+	Sign    string `json:"sign" description:"签名，详见签名算法。SHA256WithRSA验证签名值"`
+	Status  int    `json:"status" description:"订单状态"`
+	Stime   int    `json:"stime" description:"订单状态变更UNIX时间戳，10位，精确到秒。"`
+}
+
+// AsyncPrinterResultResp is the response body for querying the result of an asynchronous request.
+type AsyncPrinterResultResp struct {
+	VerifySign bool   `json:"verifySign" description:"验签结果"`
+	OrderID    string `json:"orderId" description:"订单ID，由接口Open_printMsg返回。"`
+	Status     int    `json:"status" description:"订单状态"`
+	Stime      int    `json:"stime" description:"订单状态变更UNIX时间戳，10位，精确到秒。"`
 }
