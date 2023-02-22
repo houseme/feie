@@ -238,7 +238,7 @@ func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error 
 // 错误：{"msg":"错误信息.","ret":非零错误码,"data":null,"serverExecutedTime":5}
 func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintMsgResp, err error) {
 	var formData = make(map[string]string)
-	formData[APINameField] = PrintMsg
+	formData[APINameField] = printMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
 	if req.User != "" {
@@ -283,7 +283,7 @@ func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintM
 // 错误：{"msg":"参数错误 : 该帐号未注册.","ret":-2,"data":null,"serverExecutedTime":37}
 func (f *FeiE) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp *PrinterAddResp, err error) {
 	var formData = make(map[string]string, 5)
-	formData[APINameField] = PrinterAddList
+	formData[APINameField] = printerAddList
 	formData[PrinterContentField] = req.PrinterContent
 	if req.User != "" {
 		f.user = req.User
@@ -309,7 +309,7 @@ func (f *FeiE) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp
 func (f *FeiE) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp *PrinterDelResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNListField] = req.SNList
-	formData[APINameField] = PrinterDelList
+	formData[APINameField] = printerDelList
 	if req.User != "" {
 		f.user = req.User
 	}
@@ -333,7 +333,7 @@ func (f *FeiE) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp
 // see: http://help.feieyun.com/document.php
 func (f *FeiE) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (resp *PrintLabelMsgResp, err error) {
 	var formData = make(map[string]string)
-	formData[APINameField] = PrintLabelMsg
+	formData[APINameField] = printLabelMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
 	if req.User != "" {
@@ -374,7 +374,7 @@ func (f *FeiE) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (re
 func (f *FeiE) OpenPrinterEdit(ctx context.Context, req *PrinterEditReq) (resp *PrinterEditResp, err error) {
 	var formData = make(map[string]string)
 	formData[SNField] = req.SN
-	formData[APINameField] = PrinterEdit
+	formData[APINameField] = printerEdit
 	formData[NameField] = req.Name
 	if req.User != "" {
 		f.user = req.User
@@ -403,7 +403,7 @@ func (f *FeiE) OpenPrinterEdit(ctx context.Context, req *PrinterEditReq) (resp *
 func (f *FeiE) OpenDelPrinterSQS(ctx context.Context, req *DelPrinterSQSReq) (resp *DelPrinterSQSResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
-	formData[APINameField] = DelPrinterSqs
+	formData[APINameField] = delPrinterSqs
 	if req.User != "" {
 		f.user = req.User
 	}
@@ -428,7 +428,7 @@ func (f *FeiE) OpenDelPrinterSQS(ctx context.Context, req *DelPrinterSQSReq) (re
 func (f *FeiE) OpenQueryOrderState(ctx context.Context, req *QueryOrderStateReq) (resp *QueryOrderStateResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[OrderIDField] = req.OrderID
-	formData[APINameField] = QueryOrderState
+	formData[APINameField] = queryOrderState
 	if req.User != "" {
 		f.user = req.User
 	}
@@ -454,7 +454,7 @@ func (f *FeiE) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfo
 	var formData = make(map[string]string, 6)
 	formData[SNField] = req.SN
 	formData[DateField] = req.Date
-	formData[APINameField] = QueryOrderInfoByDate
+	formData[APINameField] = queryOrderInfoByDate
 	if req.User != "" {
 		f.user = req.User
 	}
@@ -480,7 +480,7 @@ func (f *FeiE) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfo
 func (f *FeiE) OpenQueryPrinterStatus(ctx context.Context, req *QueryPrinterStatusReq) (resp *QueryPrinterStatusResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
-	formData[APINameField] = QueryPrinterStatus
+	formData[APINameField] = queryPrinterStatus
 	if req.User != "" {
 		f.user = req.User
 	}
