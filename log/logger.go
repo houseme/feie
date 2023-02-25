@@ -6,6 +6,7 @@
  *   You can obtain one at https://github.com/housme/feie.
  */
 
+// Package log is the logger for feie.
 package log
 
 import (

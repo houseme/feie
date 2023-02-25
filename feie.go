@@ -6,6 +6,7 @@
  *   You can obtain one at https://github.com/housme/feie.
  */
 
+// Package feie is the feie client.
 package feie
 
 import (
