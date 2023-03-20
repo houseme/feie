@@ -15,7 +15,7 @@ require (
 	github.com/andeya/ameda v1.5.3 // indirect
 	github.com/andeya/goutil v1.0.1 // indirect
 	github.com/bytedance/go-tagexpr/v2 v2.9.7 // indirect
-	github.com/bytedance/gopkg v0.0.0-20230224073017-0b6876860a2f // indirect
+	github.com/bytedance/gopkg v0.0.0-20230320040348-5f61dd13ae7a // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -31,6 +31,6 @@ require (
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
-	google.golang.org/protobuf v1.29.1 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
