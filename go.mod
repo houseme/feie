@@ -3,7 +3,7 @@ module github.com/houseme/feie
 go 1.19
 
 require (
-	github.com/bytedance/sonic v1.8.6
+	github.com/bytedance/sonic v1.8.7
 	github.com/cloudwego/hertz v0.6.1
 	github.com/houseme/gocrypto v1.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -15,7 +15,7 @@ require (
 	github.com/andeya/ameda v1.5.3 // indirect
 	github.com/andeya/goutil v1.0.1 // indirect
 	github.com/bytedance/go-tagexpr/v2 v2.9.7 // indirect
-	github.com/bytedance/gopkg v0.0.0-20230320040348-5f61dd13ae7a // indirect
+	github.com/bytedance/gopkg v0.0.0-20230324090325-a00d8057bef9 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cloudwego/netpoll v0.3.2 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
