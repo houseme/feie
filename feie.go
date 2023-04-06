@@ -22,12 +22,11 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/houseme/gocrypto"
 	"github.com/houseme/gocrypto/rsa"
-
-	"github.com/houseme/feie/log"
 )
 
 type options struct {
@@ -40,14 +39,14 @@ type options struct {
 	DataType  gocrypto.Encode // 数据类型
 	HashType  gocrypto.Hash   // Hash类型
 	LogPath   string          // 日志路径
-	Level     log.Level
+	Level     hlog.Level
 }
 
 // FeiE is the feie client.
 type FeiE struct {
 	request    *protocol.Request
 	response   *protocol.Response
-	logger     log.ILogger
+	logger     hlog.FullLogger
 	op         options
 	secretInfo rsa.SecretInfo
 	sysTime    string
@@ -122,7 +121,7 @@ func WithLogPath(logPath string) Option {
 }
 
 // WithLevel sets the level.
-func WithLevel(level log.Level) Option {
+func WithLevel(level hlog.Level) Option {
 	return func(o *options) {
 		o.Level = level
 	}
@@ -137,12 +136,12 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 		DataType:  gocrypto.Base64,
 		HashType:  gocrypto.SHA256,
 		LogPath:   os.TempDir(),
-		Level:     log.DebugLevel,
+		Level:     hlog.LevelDebug,
 	}
 	for _, option := range opts {
 		option(&op)
 	}
-	return &FeiE{
+	f := &FeiE{
 		op: op,
 		secretInfo: rsa.SecretInfo{
 			PublicKey:          op.PublicKey,
@@ -152,12 +151,14 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 			PrivateKeyType:     gocrypto.PKCS8,
 			HashType:           op.HashType,
 		},
-		logger:   log.New(ctx, log.WithLevel(op.Level), log.WithLogPath(op.LogPath)),
+		logger:   nil,
 		request:  &protocol.Request{},
 		response: &protocol.Response{},
 		user:     op.User,
 		ukey:     op.UKey,
 	}
+	f.initLog(ctx, op)
+	return f
 }
 
 // SetRequest sets the request.
@@ -171,7 +172,7 @@ func (f *FeiE) Response() *protocol.Response {
 }
 
 // SetLogger set feie logger
-func (f *FeiE) SetLogger(logger log.ILogger) {
+func (f *FeiE) SetLogger(logger hlog.FullLogger) {
 	f.logger = logger
 }
 

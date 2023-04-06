@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/bytedance/sonic v1.8.7
 	github.com/cloudwego/hertz v0.6.1
+	github.com/hertz-contrib/logger/zap v0.0.0-20230320032231-b153fe729ee7
 	github.com/houseme/gocrypto v1.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	go.uber.org/zap v1.24.0
@@ -29,7 +30,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
