@@ -3,7 +3,7 @@ module github.com/houseme/feie
 go 1.19
 
 require (
-	github.com/bytedance/sonic v1.8.10
+	github.com/bytedance/sonic v1.9.1
 	github.com/cloudwego/hertz v0.6.4
 	github.com/hertz-contrib/logger/zap v1.0.0
 	github.com/houseme/gocrypto v1.2.1
