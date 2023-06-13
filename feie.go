@@ -75,9 +75,9 @@ func WithUser(user string) Option {
 }
 
 // WithUserKey sets the ukey.
-func WithUserKey(ukey string) Option {
+func WithUserKey(uKey string) Option {
 	return func(o *options) {
-		o.UKey = ukey
+		o.UKey = uKey
 	}
 }
 
@@ -155,7 +155,7 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 		op: op,
 		secretInfo: rsa.SecretInfo{
 			PublicKey:          op.PublicKey,
-			PrivateKey:         "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2LDlvyuClqrnKW01FqYgvalPy1/e09ZWlvjb5Nu+0T1PsGhKjF4WBb+D7x3Dy/Db5IHMcpG/Eps6ew6n/6rwv8Ctu+uZI33YNv9sqAMPjG2EN+WcqCrVrMGUmjITVpIkQEjTdkuismf+VL3x+eJoW1y/TaLb9vchReBc6IZowRu2yItC+tFbock5Nupsl5uOCKltm3s0VqtiHUrpgVeV8dVJHLhmLENnLgcTqrkZeKogFDT+fTOhzQPZVEqQgdat/6kcmD44lN4UI7EvVNfeamwRLgy4e/CpInD9cql+t5eiRLem0+rgPq9RLivM1pRt67crH0WGY1xXtAtzWO0MMwIDAQAB",
+			PrivateKey:         "",
 			PublicKeyDataType:  op.DataType,
 			PrivateKeyDataType: op.DataType,
 			PrivateKeyType:     gocrypto.PKCS8,

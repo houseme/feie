@@ -25,7 +25,7 @@ var (
 
 	// userAgent is the user agent of feieyun.
 	// See: http://www.feieyun.com/open/index.html
-	userAgent = []byte(`Mozilla/5.0 (lanren; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36`)
+	userAgent = []byte(`Mozilla/5.0 (FeiE; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36`)
 
 	// printerAddList is the API name for adding a printer.
 	// 批量添加打印机，Open_printerAddlist
@@ -58,7 +58,7 @@ var (
 	delPrinterSqs = "Open_delPrinterSqs"
 
 	// queryOrderState is the API name for querying the order state.
-	// 查询订单状态，Open_queryOrderState 根据订单ID,去查询订单是否打印成功,订单ID由接口Open_printMsg返回
+	// 查询订单状态，Open_queryOrderState,根据订单ID去查询订单是否打印成功,订单ID由接口Open_printMsg返回
 	// See: http://www.feieyun.com/open/index.html
 	queryOrderState = "Open_queryOrderState"
 
