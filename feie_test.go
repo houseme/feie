@@ -32,7 +32,7 @@ func TestNew(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *FeiE
+		want    *Client
 		wantErr bool
 	}{
 		{
