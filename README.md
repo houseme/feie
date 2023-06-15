@@ -29,13 +29,13 @@ import (
 
 func main() {
     ctx := context.Background()
-    f := feie.New(ctx, feie.WithUser("xxxxx"), feie.WithUserKey("xxxxx"))
+    c := feie.New(ctx, feie.WithUser("xxxxx"), feie.WithUserKey("xxxxx"))
     
     // 通过SetUserKey设置用户key 和 操作方法中user参数覆盖new方法传入的 User和UserKey
     // 设置用户key 
-    f.SetUserKey("xxxxx")
+    c.SetUserKey("xxxxx")
     // 添加打印机
-    printerAddResp, err := f.OpenPrinterAddList(ctx, &feie.PrinterAddReq{
+    printerAddResp, err := c.OpenPrinterAddList(ctx, &feie.PrinterAddReq{
         PrinterContent: "xxxxxx",
         User:           "xxxxx",
     })
@@ -45,10 +45,10 @@ func main() {
     }
     fmt.Println("PrinterAddResp:", printerAddResp)
     // Reset 重置 User和UserKey 前提是new方法传入的 User和UserKey不为空
-    f.Reset()
+    c.Reset()
     
     // 执行打印
-    printMsgReq, err := f.OpenPrintMsg(ctx, &feie.PrintMsgReq{
+    printMsgReq, err := c.OpenPrintMsg(ctx, &feie.PrintMsgReq{
         SN:      "xxxxx",
         Content: "xxxxx",
         User:    "xxxxx",

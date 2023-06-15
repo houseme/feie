@@ -16,7 +16,6 @@
  *  You can obtain one at https://github.com/houseme/feie.
  */
 
-// Package feie is the feie client.
 package feie
 
 import (
@@ -37,108 +36,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/houseme/gocrypto"
 	"github.com/houseme/gocrypto/rsa"
+
+	"github.com/houseme/feie/internal"
 )
 
-type options struct {
-	User      string
-	UKey      string
-	Gateway   string
-	PublicKey string
-	TimeOut   time.Duration
-	UserAgent []byte
-	DataType  gocrypto.Encode // 数据类型
-	HashType  gocrypto.Hash   // Hash类型
-	LogPath   string          // 日志路径
-	Level     hlog.Level
-}
-
-// FeiE is the feie client.
-type FeiE struct {
-	request    *protocol.Request
-	response   *protocol.Response
-	logger     hlog.FullLogger
-	op         options
-	secretInfo rsa.SecretInfo
-	sysTime    string
-	user       string
-	ukey       string
-}
-
-// Option The option is a payment option.
-type Option func(o *options)
-
-// WithUser sets the user.
-func WithUser(user string) Option {
-	return func(o *options) {
-		o.User = user
-	}
-}
-
-// WithUserKey sets the ukey.
-func WithUserKey(uKey string) Option {
-	return func(o *options) {
-		o.UKey = uKey
-	}
-}
-
-// WithGateway sets the gateway.
-func WithGateway(gateway string) Option {
-	return func(o *options) {
-		o.Gateway = gateway
-	}
-}
-
-// WithPublicKey sets the public key.
-func WithPublicKey(publicKey string) Option {
-	return func(o *options) {
-		o.PublicKey = publicKey
-	}
-}
-
-// WithTimeOut sets the timeout.
-func WithTimeOut(timeout time.Duration) Option {
-	return func(o *options) {
-		o.TimeOut = timeout
-	}
-}
-
-// WithUserAgent sets the user agent.
-func WithUserAgent(userAgent []byte) Option {
-	return func(o *options) {
-		o.UserAgent = userAgent
-	}
-}
-
-// WithDataType sets the data type.
-func WithDataType(dataType gocrypto.Encode) Option {
-	return func(o *options) {
-		o.DataType = dataType
-	}
-}
-
-// WithHashType sets the hash type.
-func WithHashType(hashType gocrypto.Hash) Option {
-	return func(o *options) {
-		o.HashType = hashType
-	}
-}
-
-// WithLogPath sets the log path.
-func WithLogPath(logPath string) Option {
-	return func(o *options) {
-		o.LogPath = logPath
-	}
-}
-
-// WithLevel sets the level.
-func WithLevel(level hlog.Level) Option {
-	return func(o *options) {
-		o.Level = level
-	}
-}
-
 // New returns a new feie client.
-func New(ctx context.Context, opts ...Option) *FeiE {
+func New(ctx context.Context, opts ...Option) *Client {
 	op := options{
 		TimeOut:   30 * time.Second,
 		Gateway:   gateway,
@@ -146,12 +49,12 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 		DataType:  gocrypto.Base64,
 		HashType:  gocrypto.SHA256,
 		LogPath:   os.TempDir(),
-		Level:     hlog.LevelDebug,
+		Level:     Level(hlog.LevelDebug),
 	}
 	for _, option := range opts {
 		option(&op)
 	}
-	f := &FeiE{
+	c := &Client{
 		op: op,
 		secretInfo: rsa.SecretInfo{
 			PublicKey:          op.PublicKey,
@@ -161,84 +64,85 @@ func New(ctx context.Context, opts ...Option) *FeiE {
 			PrivateKeyType:     gocrypto.PKCS8,
 			HashType:           op.HashType,
 		},
-		logger:   nil,
+		logger:   internal.InitLog(ctx, op.LogPath, hlog.Level(op.Level)),
 		request:  &protocol.Request{},
 		response: &protocol.Response{},
 		user:     op.User,
 		ukey:     op.UKey,
 	}
-	f.initLog(ctx, op)
-	return f
+	c.logger.SetLevel(hlog.Level(op.Level))
+	c.logger.CtxDebugf(ctx, "feie client init success %s", c.op.Level)
+	return c
 }
 
 // SetRequest sets the request.
-func (f *FeiE) SetRequest(request *protocol.Request) {
-	f.request = request
+func (c *Client) SetRequest(request *protocol.Request) {
+	c.request = request
 }
 
 // Response return request response content
-func (f *FeiE) Response() *protocol.Response {
-	return f.response
+func (c *Client) Response() *protocol.Response {
+	return c.response
 }
 
 // SetLogger set feie logger
-func (f *FeiE) SetLogger(logger hlog.FullLogger) {
-	f.logger = logger
+func (c *Client) SetLogger(logger hlog.FullLogger) {
+	c.logger = logger
 }
 
 // SetUserKey sets the user key.
-func (f *FeiE) SetUserKey(ukey string) {
-	f.ukey = ukey
+func (c *Client) SetUserKey(ukey string) {
+	c.ukey = ukey
 }
 
 // Reset reset the feie client.
-func (f *FeiE) Reset() {
-	if strings.TrimSpace(f.op.User) != "" {
-		f.user = f.op.User
+func (c *Client) Reset() {
+	if strings.TrimSpace(c.op.User) != "" {
+		c.user = c.op.User
 	}
-	if strings.TrimSpace(f.op.UKey) != "" {
-		f.ukey = f.op.UKey
+	if strings.TrimSpace(c.op.UKey) != "" {
+		c.ukey = c.op.UKey
 	}
 }
 
 // sha1Sign returns the sha1 sign.
-func (f *FeiE) sha1Sign() string {
-	s := sha1.Sum([]byte(f.user + f.ukey + f.sysTime))
+func (c *Client) sha1Sign() string {
+	s := sha1.Sum([]byte(c.user + c.ukey + c.sysTime))
 	return hex.EncodeToString(s[:])
 }
 
 // generateTime Generate current time
-func (f *FeiE) generateTime() {
-	f.sysTime = strconv.FormatInt(time.Now().Unix(), 10)
+func (c *Client) generateTime() {
+	c.sysTime = strconv.FormatInt(time.Now().Unix(), 10)
 }
 
 // doRequest does the request.
-func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error {
-	f.generateTime()
+func (c *Client) doRequest(ctx context.Context, formData map[string]string) error {
+	c.generateTime()
 
-	formData[UserField] = f.user
-	formData[SysTimeField] = f.sysTime
-	formData[SigField] = f.sha1Sign()
-	f.logger.Debug(ctx, "formData:", formData)
-	f.request.SetMultipartFormData(formData)
-	f.request.SetRequestURI(f.op.Gateway)
-	f.request.Header.SetMethod(consts.MethodPost)
-	f.request.Header.SetUserAgentBytes(f.op.UserAgent)
-	f.logger.Debug(ctx, "request content: ", f.request)
+	formData[UserField] = c.user
+	formData[SysTimeField] = c.sysTime
+	formData[SigField] = c.sha1Sign()
+	c.logger.Debug(ctx, "formData:", formData)
+	c.request.SetMultipartFormData(formData)
+	c.request.SetRequestURI(c.op.Gateway)
+	c.request.Header.SetMethod(consts.MethodPost)
+	c.request.Header.SetUserAgentBytes(c.op.UserAgent)
+	c.logger.Debug(ctx, "request content: ", c.request)
 
-	c, err := client.NewClient(client.WithTLSConfig(&tls.Config{
+	hc, err := client.NewClient(client.WithTLSConfig(&tls.Config{
 		InsecureSkipVerify: true,
-	}), client.WithDialTimeout(f.op.TimeOut))
+	}), client.WithDialTimeout(c.op.TimeOut))
 	if err != nil {
 		return err
 	}
 
-	f.logger.Debug(ctx, "do request start")
-	err = c.Do(ctx, f.request, f.response)
+	c.logger.Debug(ctx, "do request start")
+	err = hc.Do(ctx, c.request, c.response)
 	if err != nil {
 		return err
 	}
-	f.logger.Debug(ctx, "do request end")
+	c.logger.Debug(ctx, "do request end")
 	return nil
 }
 
@@ -248,13 +152,13 @@ func (f *FeiE) doRequest(ctx context.Context, formData map[string]string) error 
 // ----------接口返回值说明----------
 // 正确例子：{"msg":"ok","ret":0,"data":"xxxx_xxxx_xxxxxxxxx","serverExecutedTime":6}
 // 错误：{"msg":"错误信息.","ret":非零错误码,"data":null,"serverExecutedTime":5}
-func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintMsgResp, err error) {
+func (c *Client) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintMsgResp, err error) {
 	var formData = make(map[string]string)
 	formData[APINameField] = printMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
 	if req.Expired > time.Now().Unix() {
 		formData[ExpiredField] = strconv.FormatInt(req.Expired, 10)
@@ -266,18 +170,18 @@ func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintM
 		formData[BackURLField] = req.BackURL
 	}
 
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
@@ -293,63 +197,63 @@ func (f *FeiE) OpenPrintMsg(ctx context.Context, req *PrintMsgReq) (resp *PrintM
 // ----------接口返回值说明----------
 // 正确例子：{"msg":"ok","ret":0,"data":{"ok":["sn#key#remark#carnum","316500011#abcdefgh#快餐前台"],"no":["316500012#abcdefgh#快餐前台#13688889999  （错误：识别码不正确）"]},"serverExecutedTime":3}
 // 错误：{"msg":"参数错误 : 该帐号未注册.","ret":-2,"data":null,"serverExecutedTime":37}
-func (f *FeiE) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp *PrinterAddResp, err error) {
+func (c *Client) OpenPrinterAddList(ctx context.Context, req *PrinterAddReq) (resp *PrinterAddResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[APINameField] = printerAddList
 	formData[PrinterContentField] = req.PrinterContent
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenPrinterDelList 删除批量打印机
 // content 打印机编号，多台打印机请用减号“-”连接起来。
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp *PrinterDelResp, err error) {
+func (c *Client) OpenPrinterDelList(ctx context.Context, req *PrinterDelReq) (resp *PrinterDelResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNListField] = req.SNList
 	formData[APINameField] = printerDelList
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenPrintLabelMsg 标签机打印订单
 // 发送用户需要打印的订单内容给飞鹅云标签打印机（该接口只能是标签机使用，其它型号打印机请勿使用该接口）
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (resp *PrintLabelMsgResp, err error) {
+func (c *Client) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (resp *PrintLabelMsgResp, err error) {
 	var formData = make(map[string]string)
 	formData[APINameField] = printLabelMsg
 	formData[SNField] = req.SN
 	formData[ContentField] = req.Content
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
 	if req.Expired > time.Now().Unix() {
 		formData[ExpiredField] = strconv.FormatInt(req.Expired, 10)
@@ -365,123 +269,123 @@ func (f *FeiE) OpenPrintLabelMsg(ctx context.Context, req *PrintLabelMsgReq) (re
 		formData[ImgField] = req.Img
 	}
 
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenPrinterEdit 修改打印机信息
 // 修改打印机信息
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenPrinterEdit(ctx context.Context, req *PrinterEditReq) (resp *PrinterEditResp, err error) {
+func (c *Client) OpenPrinterEdit(ctx context.Context, req *PrinterEditReq) (resp *PrinterEditResp, err error) {
 	var formData = make(map[string]string)
 	formData[SNField] = req.SN
 	formData[APINameField] = printerEdit
 	formData[NameField] = req.Name
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
 	if len(strings.TrimSpace(req.PhoneNum)) > 0 {
 		formData[PhoneNumField] = strings.TrimSpace(req.PhoneNum)
 	}
 
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenDelPrinterSQS 清空待打印队列
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenDelPrinterSQS(ctx context.Context, req *DelPrinterSQSReq) (resp *DelPrinterSQSResp, err error) {
+func (c *Client) OpenDelPrinterSQS(ctx context.Context, req *DelPrinterSQSReq) (resp *DelPrinterSQSResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
 	formData[APINameField] = delPrinterSqs
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenQueryOrderState 查询订单是否打印成功
 // 根据订单ID,去查询订单是否打印成功,订单ID由接口Open_printMsg返回
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenQueryOrderState(ctx context.Context, req *QueryOrderStateReq) (resp *QueryOrderStateResp, err error) {
+func (c *Client) OpenQueryOrderState(ctx context.Context, req *QueryOrderStateReq) (resp *QueryOrderStateResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[OrderIDField] = req.OrderID
 	formData[APINameField] = queryOrderState
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
 // OpenQueryOrderInfoByDate 查询指定打印机某天的订单统计数
 // 根据打印机编号和日期，查询该打印机某天的订单统计数,查询指定打印机某天的订单详情，返回已打印订单数和等待打印数。
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfoByDateReq) (resp *QueryOrderInfoByDateResp, err error) {
+func (c *Client) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfoByDateReq) (resp *QueryOrderInfoByDateResp, err error) {
 	var formData = make(map[string]string, 6)
 	formData[SNField] = req.SN
 	formData[DateField] = req.Date
 	formData[APINameField] = queryOrderInfoByDate
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
@@ -489,25 +393,25 @@ func (f *FeiE) OpenQueryOrderInfoByDate(ctx context.Context, req *QueryOrderInfo
 // 根据打印机编号，查询打印机状态，返回打印机状态。
 // 查询指定打印机状态，返回该打印机在线或离线，正常或异常的信息。
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) OpenQueryPrinterStatus(ctx context.Context, req *QueryPrinterStatusReq) (resp *QueryPrinterStatusResp, err error) {
+func (c *Client) OpenQueryPrinterStatus(ctx context.Context, req *QueryPrinterStatusReq) (resp *QueryPrinterStatusResp, err error) {
 	var formData = make(map[string]string, 5)
 	formData[SNField] = req.SN
 	formData[APINameField] = queryPrinterStatus
 	if req.User != "" {
-		f.user = req.User
+		c.user = req.User
 	}
-	if err = f.doRequest(ctx, formData); err != nil {
+	if err = c.doRequest(ctx, formData); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "do request response body:", string(f.response.Body()))
-	if !f.response.HasBodyBytes() {
+	c.logger.Debug(ctx, "do request response body:", string(c.response.Body()))
+	if !c.response.HasBodyBytes() {
 		err = errors.New("response is empty")
 		return
 	}
-	if err = sonic.Unmarshal(f.response.Body(), &resp); err != nil {
+	if err = sonic.Unmarshal(c.response.Body(), &resp); err != nil {
 		return
 	}
-	f.logger.Debug(ctx, "json Unmarshal resp result:", resp)
+	c.logger.Debug(ctx, "json Unmarshal resp result:", resp)
 	return
 }
 
@@ -536,15 +440,15 @@ func (f *FeiE) OpenQueryPrinterStatus(ctx context.Context, req *QueryPrinterStat
 // 注：开发者接收后需立即返回SUCCESS，如5秒内不返回或返回数据格式错误，平台会重新推送。
 // `SUCCESS`
 // see: http://help.feieyun.com/document.php
-func (f *FeiE) AsyncPrinterResult(ctx context.Context, req *AsyncPrinterResultReq) (resp *AsyncPrinterResultResp, err error) {
+func (c *Client) AsyncPrinterResult(ctx context.Context, req *AsyncPrinterResultReq) (resp *AsyncPrinterResultResp, err error) {
 	var (
-		handle     = rsa.NewRSACrypt(f.secretInfo)
+		handle     = rsa.NewRSACrypt(c.secretInfo)
 		content    = "orderId=" + req.OrderID + "&status=" + strconv.Itoa(req.Status) + "&stime=" + strconv.Itoa(req.Stime)
 		verifySign bool
 	)
 
-	if verifySign, err = handle.VerifySign(content, req.Sign, f.op.DataType); err != nil {
-		f.logger.Debug(ctx, "AsyncPrinterResult rsa VerifySign failed:", err)
+	if verifySign, err = handle.VerifySign(content, req.Sign, c.op.DataType); err != nil {
+		c.logger.Debug(ctx, "AsyncPrinterResult rsa VerifySign failed:", err)
 		return
 	}
 	resp = &AsyncPrinterResultResp{

@@ -58,7 +58,7 @@ var (
 	delPrinterSqs = "Open_delPrinterSqs"
 
 	// queryOrderState is the API name for querying the order state.
-	// 查询订单状态，Open_queryOrderState,根据订单ID去查询订单是否打印成功,订单ID由接口Open_printMsg返回
+	// 查询订单状态，OpenQueryOrderState,根据订单ID去查询订单是否打印成功,订单ID由接口Open_printMsg返回
 	// See: http://www.feieyun.com/open/index.html
 	queryOrderState = "Open_queryOrderState"
 

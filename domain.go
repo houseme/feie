@@ -18,6 +18,119 @@
 
 package feie
 
+import (
+	"time"
+
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/houseme/gocrypto"
+	"github.com/houseme/gocrypto/rsa"
+)
+
+type options struct {
+	User      string
+	UKey      string
+	Gateway   string
+	PublicKey string
+	TimeOut   time.Duration
+	UserAgent []byte
+	DataType  gocrypto.Encode // 数据类型
+	HashType  gocrypto.Hash   // Hash类型
+	LogPath   string          // 日志路径
+	Level     Level
+}
+
+// Client is the feie client.
+type Client struct {
+	request    *protocol.Request
+	response   *protocol.Response
+	logger     Logger
+	op         options
+	secretInfo rsa.SecretInfo
+	sysTime    string
+	user       string
+	ukey       string
+}
+
+// Logger is the logger interface.
+type Logger hlog.FullLogger
+
+// Level is the logger level.
+type Level hlog.Level
+
+// Option The option is a payment option.
+type Option func(o *options)
+
+// WithUser sets the user.
+func WithUser(user string) Option {
+	return func(o *options) {
+		o.User = user
+	}
+}
+
+// WithUserKey sets the ukey.
+func WithUserKey(uKey string) Option {
+	return func(o *options) {
+		o.UKey = uKey
+	}
+}
+
+// WithGateway sets the gateway.
+func WithGateway(gateway string) Option {
+	return func(o *options) {
+		o.Gateway = gateway
+	}
+}
+
+// WithPublicKey sets the public key.
+func WithPublicKey(publicKey string) Option {
+	return func(o *options) {
+		o.PublicKey = publicKey
+	}
+}
+
+// WithTimeOut sets the timeout.
+func WithTimeOut(timeout time.Duration) Option {
+	return func(o *options) {
+		o.TimeOut = timeout
+	}
+}
+
+// WithUserAgent sets the user agent.
+func WithUserAgent(userAgent []byte) Option {
+	return func(o *options) {
+		o.UserAgent = userAgent
+	}
+}
+
+// WithDataType sets the data type.
+func WithDataType(dataType gocrypto.Encode) Option {
+	return func(o *options) {
+		o.DataType = dataType
+	}
+}
+
+// WithHashType sets the hash type.
+func WithHashType(hashType gocrypto.Hash) Option {
+	return func(o *options) {
+		o.HashType = hashType
+	}
+}
+
+// WithLogPath sets the log path.
+func WithLogPath(logPath string) Option {
+	return func(o *options) {
+		o.LogPath = logPath
+	}
+}
+
+// WithLevel sets the level.
+func WithLevel(level Level) Option {
+	return func(o *options) {
+		o.Level = level
+	}
+}
+
 // PrinterAddReq is the request body for adding a printer.
 type PrinterAddReq struct {
 	User           string `json:"user" description:"飞鹅云后台注册用户名。"`
