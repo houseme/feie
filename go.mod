@@ -8,7 +8,7 @@ require (
 	github.com/hertz-contrib/logger/zap v1.0.0
 	github.com/houseme/gocrypto v1.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.26.0
 )
 
 require (
