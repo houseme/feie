@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/bytedance/sonic v1.11.9
-	github.com/cloudwego/hertz v0.9.0
+	github.com/cloudwego/hertz v0.9.1
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/houseme/gocrypto v1.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -20,7 +20,7 @@ require (
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/cloudwego/netpoll v0.5.0 // indirect
+	github.com/cloudwego/netpoll v0.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
